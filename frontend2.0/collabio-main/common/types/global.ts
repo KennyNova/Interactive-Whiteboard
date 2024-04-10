@@ -81,10 +81,10 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   check_room: (roomId: string) => void;
   draw: (move: Move) => void;
-  mouse_move: (x: number, y: number) => void;
+  mouse_move: (mousePos: object) => void;
   undo: () => void;
-  create_room: (room: object, username: object) => void;
-  join_room: (room: object, username: object) => void;
+  create_room: (data: object) => void;
+  join_room: (data: object) => void;
   joined_room: () => void;
   leave_room: () => void;
   send_msg: (msg: string) => void;

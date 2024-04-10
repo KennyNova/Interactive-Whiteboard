@@ -1,5 +1,5 @@
-from flask import Flask, request, send_from_directory
-from flask_socketio import SocketIO, join_room, leave_room, emit, rooms
+from flask import Flask, request
+from flask_socketio import SocketIO, join_room, leave_room, emit, rooms, send
 from uuid import uuid4
 import random
 import string
@@ -7,7 +7,7 @@ import string
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-rooms = {}
+# rooms = {}
 
 def add_move(room_id, socket_id, move):
     room = rooms[room_id]
@@ -27,17 +27,18 @@ def hello():
 
 @socketio.on('create_room')
 def on_create_room(data):
-    
-    username = data['username']
-    room_id=data['roomId']
+    print(f"Received data on 'create_room': {data}")
+    client_data = data['clientData']
+    username = client_data['username']
+    room_id = client_data['roomId']
 
     join_room(room_id)
-
-    rooms[room_id] = {
-        'users_moves': {request.sid: []},
-        'drawed': [],
-        'users': {request.sid: username},
-    }
+    send(username + ' has entered the room.', to=room_id)
+    # rooms[room_id] = {
+    #     'users_moves': {request.sid: []},
+    #     'drawed': [],
+    #     'users': {request.sid: username},
+    # }
 
     emit('created', room_id, room=request.sid)
 
@@ -48,8 +49,10 @@ def on_check_room(data):
 
 @socketio.on('join_room')
 def on_join_room(data):
-    room_id = data['roomId']
-    username = data['username']
+    print(f"Received data on 'join_room': {data}")
+    client_data = data['clientData']
+    username = client_data['username']
+    room_id = client_data['roomId']
 
     room = rooms.get(room_id)
 
@@ -96,10 +99,17 @@ def on_undo():
 
 @socketio.on('mouse_move')
 def on_mouse_move(data):
-    x = data['x']
-    y = data['y']
+    print(f"Received data on 'mouse_move': {data}")
+    client_data = data['mousePos']
+    x = client_data['x']
+    y = client_data['y']
+    print(f"this is the request.sid: {request.sid}")
+    print(f"these are the rooms: {rooms}")
+    if(rooms(request.sid)):
+        print(f"this is the room: {rooms(request.sid)}")
+    room_id = rooms(request.sid)[0]  # get the room id associated with the current sid
 
-    emit('mouse_moved', x, y, request.sid, room=list(request.sid_rooms)[1], include_self=False)
+    emit('mouse_moved', {'newX': x, 'newY': y, 'socketIdMoved': rooms(request.sid)[0]})
 
 @socketio.on('send_msg')
 def on_send_msg(data):

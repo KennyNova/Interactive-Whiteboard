@@ -19,12 +19,17 @@ const MousePosition = () => {
 
   const touchDevice = window.matchMedia('(pointer: coarse)').matches;
 
+  const mousePos = {
+    x: getPos(docX, x),
+    y: getPos(docY, y),
+  };
+
   useInterval(() => {
     if (
       (prevPosition.current.x !== docX || prevPosition.current.y !== docY) &&
       !touchDevice
     ) {
-      socket.emit('mouse_move', getPos(docX, x), getPos(docY, y));
+      socket.emit('mouse_move', {mousePos});
       prevPosition.current = { x: docX, y: docY };
     }
   }, 150);

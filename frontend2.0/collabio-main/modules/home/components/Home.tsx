@@ -15,6 +15,11 @@ const Home = () => {
   const [roomId, setRoomId] = useState('');
   const [username, setUsername] = useState('');
 
+  const clientData = {
+    username,
+    roomId,
+  };
+
   const router = useRouter();
 
   useEffect(() => {
@@ -56,13 +61,19 @@ const Home = () => {
     if(roomId === ''){
       setRoomId(Math.random().toString(36).substring(2, 6))
     }
-    socket.emit('create_room', {username}, {roomId});
+
+    const clientData = {
+      username: username,
+      roomId: roomId
+    };
+
+    socket.emit('create_room', {clientData});
   };
 
   const handleJoinRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (roomId) socket.emit('join_room', {roomId}, {username});
+    if (roomId) socket.emit('join_room', {clientData});
   };
 
   return (
