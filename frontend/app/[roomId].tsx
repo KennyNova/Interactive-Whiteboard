@@ -1,7 +1,8 @@
 
+import { NextPage } from 'next';
 import { Tldraw } from 'tldraw';
 
-export default function Room() {
+const RoomPage: NextPage = () => { 
 
 
     return (

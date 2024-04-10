@@ -1,12 +1,15 @@
-'use client'
-
 import { FormEvent, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { io} from 'socket.io-client';
-import { useSetRoomId } from '@/components/room/room.hooks';
-import { RecoilRoot } from 'recoil';
 
-export default function Home() {
+import { useRouter } from 'next/router';
+
+import { socket } from '@/common/lib/socket';
+import { useSetRoomId } from '@/common/recoil/room';
+import { useModal } from '@/modules/modal';
+
+import NotFoundModal from '../modals/NotFound';
+
+const Home = () => {
+  const { openModal } = useModal();
   const setAtomRoomId = useSetRoomId();
 
   const [roomId, setRoomId] = useState('');
@@ -14,10 +17,12 @@ export default function Home() {
 
   const router = useRouter();
 
-  const socket = io('http://localhost:8000');
+  useEffect(() => {
+    document.body.style.backgroundColor = 'white';
+  }, []);
 
   useEffect(() => {
-    socket.on('created', (roomIdFromServer: string) => {
+    socket.on('created', (roomIdFromServer) => {
       setAtomRoomId(roomIdFromServer);
       router.push(roomIdFromServer);
     });
@@ -27,7 +32,7 @@ export default function Home() {
         setAtomRoomId(roomIdFromServer);
         router.push(roomIdFromServer);
       } else {
-        alert(`${roomId} not found` );
+        openModal(<NotFoundModal id={roomId} />);
       }
     };
 
@@ -37,20 +42,12 @@ export default function Home() {
       socket.off('created');
       socket.off('joined', handleJoinedRoom);
     };
-  }, [ roomId, router, setAtomRoomId]);
+  }, [openModal, roomId, router, setAtomRoomId]);
 
   useEffect(() => {
     socket.emit('leave_room');
     setAtomRoomId('');
   }, [setAtomRoomId]);
-
-  const handleJoinRoom = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    socket.emit('join_room', {username, roomId});
-    console.log(username)
-    console.log(roomId)
-  };
 
   const handleCreateRoom = () => {
     if(username === ''){
@@ -59,10 +56,14 @@ export default function Home() {
     if(roomId === ''){
       setRoomId(Math.random().toString(36).substring(2, 6))
     }
-    socket.emit('create_room', {username, roomId});
-    console.log(username)
-    console.log(roomId)
-  }; 
+    socket.emit('create_room', {username}, {roomId});
+  };
+
+  const handleJoinRoom = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (roomId) socket.emit('join_room', {roomId}, {username});
+  };
 
   return (
     <div className="flex flex-col items-center py-24">
@@ -120,4 +121,6 @@ export default function Home() {
       </div>
     </div>
   );
-}
+};
+
+export default Home;

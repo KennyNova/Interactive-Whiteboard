@@ -27,11 +27,9 @@ def hello():
 
 @socketio.on('create_room')
 def on_create_room(data):
+    
     username = data['username']
-    room_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
-
-    while room_id in rooms:
-        room_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+    room_id=data['roomId']
 
     join_room(room_id)
 
@@ -45,32 +43,33 @@ def on_create_room(data):
 
 @socketio.on('check_room')
 def on_check_room(data):
-    room_id = data['room_id']
+    room_id = data['roomId']
     emit('room_exists', room_id in rooms)
 
 @socketio.on('join_room')
 def on_join_room(data):
-    room_id = data['room_id']
+    room_id = data['roomId']
     username = data['username']
 
     room = rooms.get(room_id)
 
-    if room and len(room['users']) < 12:
-        join_room(room_id)
+    # commented out to implement later
+    # if room and len(room['users']) < 12:
+    join_room(room_id)
 
-        room['users'][request.sid] = username
-        room['users_moves'][request.sid] = []
+    room['users'][request.sid] = username
+    room['users_moves'][request.sid] = []
 
-        emit('joined', room_id, room=request.sid)
-    else:
-        emit('joined', '', True, room=request.sid)
+    emit('joined', room_id, room=request.sid)
+    # else:
+    #     emit('joined', '', True, room=request.sid)
 
-@socketio.on('leave_room')
-def on_leave_room():
-    room_id = rooms(request.sid)[0]
-    leave_room(room_id)
+# @socketio.on('leave_room')
+# def on_leave_room():
+#     room_id = rooms(request.sid)[0]
+#     leave_room(room_id)
 
-    emit('user_disconnected', request.sid, room=room_id)
+#     emit('user_disconnected', request.sid, room=room_id)
 
 @socketio.on('draw')
 def on_draw(data):
