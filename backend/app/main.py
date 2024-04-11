@@ -1,16 +1,19 @@
+
 from flask import Flask, request
 from flask_socketio import SocketIO, join_room, leave_room, emit, rooms, send
 from uuid import uuid4
+import time
 import random
 import string
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# rooms = {}
+serverRooms = {}
 
 def add_move(room_id, socket_id, move):
-    room = rooms[room_id]
+    print(serverRooms)
+    room = serverRooms[room_id]
 
     if socket_id not in room['users_moves']:
         room['users_moves'][socket_id] = [move]
@@ -18,7 +21,7 @@ def add_move(room_id, socket_id, move):
         room['users_moves'][socket_id].append(move)
 
 def undo_move(room_id, socket_id):
-    room = rooms[room_id]
+    room = serverRooms[room_id]
     room['users_moves'][socket_id].pop()
 
 @app.route('/hello')
@@ -27,41 +30,39 @@ def hello():
 
 @socketio.on('create_room')
 def on_create_room(data):
-    print(f"Received data on 'create_room': {data}")
+    # print(f"Received data on 'create_room': {data}")
     client_data = data['clientData']
     username = client_data['username']
     room_id = client_data['roomId']
 
     join_room(room_id)
     send(username + ' has entered the room.', to=room_id)
-    # rooms[room_id] = {
-    #     'users_moves': {request.sid: []},
-    #     'drawed': [],
-    #     'users': {request.sid: username},
-    # }
+    serverRooms[room_id] = {
+        'users_moves': {request.sid: []},
+        'drawed': [],
+        'users': {request.sid: username},
+    }
 
     emit('created', room_id, room=request.sid)
 
 @socketio.on('check_room')
 def on_check_room(data):
-    room_id = data['roomId']
-    emit('room_exists', room_id in rooms)
+    room_id = data
+    emit('room_exists', room_id in serverRooms)
 
 @socketio.on('join_room')
 def on_join_room(data):
-    print(f"Received data on 'join_room': {data}")
+    # print(f"Received data on 'join_room': {data}")
     client_data = data['clientData']
     username = client_data['username']
     room_id = client_data['roomId']
-
-    room = rooms.get(room_id)
 
     # commented out to implement later
     # if room and len(room['users']) < 12:
     join_room(room_id)
 
-    room['users'][request.sid] = username
-    room['users_moves'][request.sid] = []
+    serverRooms[room_id]['users'][request.sid] = username  # Fix here
+    serverRooms[room_id]['users_moves'][request.sid] = []  # And here
 
     emit('joined', room_id, room=request.sid)
     # else:
@@ -76,8 +77,9 @@ def on_join_room(data):
 
 @socketio.on('draw')
 def on_draw(data):
-    room_id = list(request.sid_rooms)[1]
-    move = data['move']
+    print(f"Received data on 'draw': {data} ")
+    room_id = data['roomId']
+    move = data
 
     timestamp = int(time.time())
 
@@ -99,7 +101,7 @@ def on_undo():
 
 @socketio.on('mouse_move')
 def on_mouse_move(data):
-    print(f"Received data on 'mouse_move': {data}")
+    # print(f"Received data on 'mouse_move': {data}")
     client_data = data['mousePos']
     x = client_data['x']
     y = client_data['y']

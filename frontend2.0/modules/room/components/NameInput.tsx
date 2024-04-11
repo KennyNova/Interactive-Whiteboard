@@ -16,6 +16,11 @@ const NameInput = () => {
   const router = useRouter();
   const roomId = (router.query.roomId || '').toString();
 
+  const clientData = {
+    username: name,
+    roomId: roomId
+  };
+
   useEffect(() => {
     if (!roomId) return;
 
@@ -51,7 +56,7 @@ const NameInput = () => {
   const handleJoinRoom = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    socket.emit('join_room', {roomId}, {name});
+    socket.emit('join_room', { clientData });
   };
 
   return (

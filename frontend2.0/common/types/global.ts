@@ -35,6 +35,7 @@ export interface Move {
   options: CtxOptions;
   timestamp: number;
   id: string;
+  roomId: string;
 }
 
 export type Room = {

@@ -14,6 +14,7 @@ import { Move } from '@/common/types/global';
 import { drawRect, drawCircle, drawLine } from '../helpers/Canvas.helpers';
 import { useBoardPosition } from './useBoardPosition';
 import { useCtx } from './useCtx';
+import { useRouter } from 'next/router';
 
 let tempMoves: [number, number][] = [];
 let tempCircle = { cX: 0, cY: 0, radiusX: 0, radiusY: 0 };
@@ -33,6 +34,9 @@ export const useDraw = (blocked: boolean) => {
 
   const [drawing, setDrawing] = useState(false);
   const ctx = useCtx();
+
+  const router = useRouter();
+  const { roomId } = router.query;
 
   const setupCtxOptions = () => {
     if (ctx) {
@@ -168,6 +172,7 @@ export const useDraw = (blocked: boolean) => {
       },
       path: tempMoves,
       options,
+      roomId: roomId as string,
     };
 
     tempMoves = [];
