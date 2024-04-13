@@ -4,11 +4,15 @@ import { AiOutlineSend } from 'react-icons/ai';
 
 import { socket } from '@/common/lib/socket';
 
+import { useRoom } from '@/common/recoil/room';
+
 const ChatInput = () => {
   const [msg, setMsg] = useState('');
+  
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
 
     socket.emit('send_msg', msg);
 

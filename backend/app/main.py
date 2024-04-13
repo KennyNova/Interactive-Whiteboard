@@ -24,6 +24,11 @@ def undo_move(room_id, socket_id):
     room = serverRooms[room_id]
     room['users_moves'][socket_id].pop()
 
+def send_room_state(room_id, socket_id):
+    room = serverRooms[room_id]
+    moves = room['users_moves']
+    socketio.emit('room_state', moves, room=socket_id)
+
 @app.route('/hello')
 def hello():
     return 'Hello World'
@@ -60,6 +65,7 @@ def on_join_room(data):
     # commented out to implement later
     # if room and len(room['users']) < 12:
     join_room(room_id)
+    send_room_state(room_id, request.sid)
 
     serverRooms[room_id]['users'][request.sid] = username  # Fix here
     serverRooms[room_id]['users_moves'][request.sid] = []  # And here
@@ -115,9 +121,15 @@ def on_mouse_move(data):
 
 @socketio.on('send_msg')
 def on_send_msg(data):
-    msg = data['msg']
+    print(f"this is the message data: {data}")
+    room_id = rooms(request.sid)[0]
+    msg = {
+        'userId': request.sid,
+        'msg': data
+    }
 
-    emit('new_msg', request.sid, msg, room=list(request.sid_rooms)[1])
+    # emit('new_msg', request.sid, msg, room=request.sid)
+    emit('new_msg', msg)
 
 @socketio.on('disconnect')
 def on_disconnect():
