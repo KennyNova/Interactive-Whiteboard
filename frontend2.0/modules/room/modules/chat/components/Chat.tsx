@@ -21,12 +21,21 @@ const Chat = () => {
   const [opened, setOpened] = useState(false);
   const [msgs, handleMsgs] = useList<MessageType>([]);
 
-  useEffect(() => {
-    const handleNewMsg = (userId: string, msg: string) => {
-      const user = room.users.get(userId);
+  interface MsgData {
+    userId: string;
+    msg: string;
+  }
 
+  useEffect(() => {
+    const handleNewMsg = (msgData: MsgData) => {
+      const user = room.users.get(msgData.userId);
+      console.log(room)
+      const msg = msgData.msg
+
+      console.log(`this is the userID: ${JSON.stringify(msgData.userId)} this is the message they sent: ${msg}`)
+      
       handleMsgs.push({
-        userId,
+        userId: msgData.userId,
         msg,
         id: msgs.length + 1,
         username: user?.name || 'Anonymous',
