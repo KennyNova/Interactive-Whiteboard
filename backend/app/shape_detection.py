@@ -44,20 +44,23 @@ def detect_shapes(move):
     with torch.no_grad():
         outputs = model(input_tensor)
 
+
+    logits = outputs.logits.squeeze(0).numpy()  
     # Extract detected shapes
     detected_shapes = []  
-    print(f"this is outputs: {outputs}")
-    # AI IMPLEMENTATION
-    # labels = outputs.argmax(1).squeeze().tolist()
-    # Mine
-    labels = torch.argmax(outputs.logits, dim=2).squeeze().tolist()
-    for label in labels:
-        if label == 0:
-            detected_shapes.append('circle')
-        elif label == 1:
-            detected_shapes.append('rectangle')
-        elif label == 2:
-            detected_shapes.append('triangle')
+    # print(f"this is outputs: {outputs}")
+    labels = logits.argsort()[-3:][::-1]
+    print(f"this is labels: {labels}")
+    for image_label_indices in labels:  # Iterate over each image's predictions
+        detected_shapes_for_image  = [] # Store shapes for a single image
+        for label_index in image_label_indices: 
+            if label_index == 0:
+                detected_shapes_for_image.append('circle')
+            elif label_index == 1:
+                detected_shapes_for_image.append('rectangle')
+            elif label_index == 2:
+                detected_shapes_for_image.append('triangle')
+        detected_shapes.append(detected_shapes_for_image)  # Add shapes for the current image
 
     print(f"This is all the detected shapes: {detected_shapes}")
     return detected_shapes 
