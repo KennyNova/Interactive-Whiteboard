@@ -34,6 +34,7 @@ export interface Move {
   path: [number, number][];
   options: CtxOptions;
   timestamp: number;
+  shapes: any;
   id: string;
   roomId: string;
 }

@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, join_room, leave_room, emit, rooms, send
 from uuid import uuid4
 import time
 from objects import ClientToServerEvents, Move, Room, ServerToClientEvents
+from shape_detection import detect_shapes 
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -79,22 +80,37 @@ def on_join_room(data):
 #     leave_room(room_id)
 
 #     emit('user_disconnected', request.sid, room=room_id)
-
 @socketio.on('draw')
 def on_draw(data):
     print(f"Received data on 'draw': {data} ")
     room_id = data['roomId']
     move = data
 
+    # Shape detection - Use the improved implementation
+    detected_shapes = detect_shapes(move)
+
     timestamp = int(time.time())
-
     move['id'] = str(uuid4())
+    add_move(room_id, request.sid, {**move, 'timestamp': timestamp, 'shapes': detected_shapes})
 
-    add_move(room_id, request.sid, {**move, 'timestamp': timestamp})
+    emit('your_move', {**move, 'timestamp': timestamp, 'shapes': detected_shapes}, room=request.sid)
+    emit('user_draw', {**move, 'timestamp': timestamp, 'shapes': detected_shapes}, room=room_id, include_self=False)
 
-    emit('your_move', {**move, 'timestamp': timestamp}, room=request.sid)
+# @socketio.on('draw')
+# def on_draw(data):
+#     print(f"Received data on 'draw': {data} ")
+#     room_id = data['roomId']
+#     move = data
 
-    emit('user_draw', {**move, 'timestamp': timestamp}, room=room_id, include_self=False)
+#     timestamp = int(time.time())
+
+#     move['id'] = str(uuid4())
+
+#     add_move(room_id, request.sid, {**move, 'timestamp': timestamp})
+
+#     emit('your_move', {**move, 'timestamp': timestamp}, room=request.sid)
+
+#     emit('user_draw', {**move, 'timestamp': timestamp}, room=room_id, include_self=False)
 
 @socketio.on('undo')
 def on_undo():

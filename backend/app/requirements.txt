@@ -1,2 +1,7 @@
 Flask
 flask-socketio
+numpy
+opencv-python
+safetensors
+torch
+torchvision 
