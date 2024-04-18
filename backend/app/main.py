@@ -12,7 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 serverRooms = {}
 
 def add_move(room_id, socket_id, move):
-    print(serverRooms)
+    # print(serverRooms)
     room = serverRooms[room_id]
 
     if socket_id not in room['users_moves']:
@@ -82,7 +82,7 @@ def on_join_room(data):
 #     emit('user_disconnected', request.sid, room=room_id)
 @socketio.on('draw')
 def on_draw(data):
-    print(f"Received data on 'draw': {data} ")
+    # print(f"Received data on 'draw': {data} ")
     room_id = data['roomId']
     move = data
 
@@ -126,8 +126,8 @@ def on_mouse_move(data):
     client_data = data['mousePos']
     x = client_data['x']
     y = client_data['y']
-    print(f"this is the request.sid: {request.sid}")
-    print(f"these are the rooms: {rooms}")
+    # print(f"this is the request.sid: {request.sid}")
+    # print(f"these are the rooms: {rooms}")
     if(rooms(request.sid)):
         print(f"this is the room: {rooms(request.sid)}")
     room_id = rooms(request.sid)[0]  # get the room id associated with the current sid
@@ -136,7 +136,7 @@ def on_mouse_move(data):
 
 @socketio.on('send_msg')
 def on_send_msg(data):
-    print(f"this is the message data: {data}")
+    # print(f"this is the message data: {data}")
     room_id = rooms(request.sid)[0]
     msg = {
         'userId': request.sid,
