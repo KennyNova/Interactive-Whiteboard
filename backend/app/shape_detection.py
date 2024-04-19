@@ -1,14 +1,13 @@
 import cv2
 import numpy as np
-import timm 
-import torch
-import torchvision.transforms as transforms, Compose, ToPILImage, Resize, ToTensor, Normalize
-from transformers import AutoConfig, AutoModelForObjectDetection, AutoTokenizer
+import tensorflow as tf
+from tensorflow import keras
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
+# Load the TensorFlow/Keras model. 
+model = keras.models.load_model('model/shapedetector_model_t2.h5')
 
-
-config = AutoConfig.from_pretrained("driesverachtert/basic_shapes_object_detection")
-model = AutoModelForObjectDetection.from_pretrained("driesverachtert/basic_shapes_object_detection")
+class_names = ['circle', 'rectangle', 'square', 'triangle']
 
 def extract_image_data(move, margin=20):
     path = move['path']
@@ -44,39 +43,23 @@ def extract_image_data(move, margin=20):
     return img
 
 def detect_shapes(move):
-    img = extract_image_data(move) 
+    img = extract_image_data(move)
 
-    # Preprocessing
-    image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
-    transform = transforms.Compose([
-        transforms.ToPILImage(),
-        transforms.Resize((224, 224)), 
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    input_tensor = transform(image)
-    input_tensor = input_tensor.unsqueeze(0) 
+    # Convert to grayscale and resize for the model
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img = cv2.resize(img, (28, 28))
 
-    # Inference
-    with torch.no_grad():
-        outputs = model(input_tensor)
+    # Normalize the image to match the input requirements of the model
+    img_array = np.array(img) / 255.0
+    img_array = img_array.reshape(1, 28, 28, 1)  # Reshape for the model (adding batch dimension)
 
-    # Process the model's output
-    results = outputs['logits'][0]  # Taking the first (and only) batch
-    keep = results[:, -1] < 0.9  # Keep predictions where the 'no object' class score is low
+    # Perform prediction
+    predictions = model.predict(img_array)
+    score = tf.nn.softmax(predictions[0])
 
-    # Decode bounding boxes and labels
-    scores = results[keep, -1]
-    labels = results[keep, :-1].argmax(1)
-    boxes = outputs['pred_boxes'][0][keep]
+    # Decode the predictions
+    predicted_label = class_names[np.argmax(score)]
+    confidence = np.max(score)
 
-    print(scores, labels)
-
-    detected_shapes = []
-    for score, label, box in zip(scores, labels, boxes):
-        if score > 0.85:  # Confidence threshold
-            shape_label = 'square' if label == 0 else 'circle' if label == 1 else 'triangle'
-            detected_shapes.append((shape_label, box.tolist(), score.item()))
-
-    print(f"This is all the detected shapes: {detected_shapes}")
-    return detected_shapes
+    print(f"Detected shape: {predicted_label} with confidence: {confidence:.2f}")
+    return [predicted_label, confidence]

@@ -1,7 +1,8 @@
 Flask
-flask-socketio
-numpy
-opencv-python
-safetensors
-torch
-torchvision 
+flask_socketio
+
+# ***For AI model***
+# numpy
+# opencv-python
+# tensorflow-gpu==1.12.0
+# keras

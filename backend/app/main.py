@@ -4,7 +4,6 @@ from flask_socketio import SocketIO, join_room, leave_room, emit, rooms, send
 from uuid import uuid4
 import time
 from objects import ClientToServerEvents, Move, Room, ServerToClientEvents
-from shape_detection import detect_shapes 
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -87,7 +86,8 @@ def on_draw(data):
     move = data
 
     # Shape detection - Use the improved implementation
-    detected_shapes = detect_shapes(move)
+    # detected_shapes = detect_shapes(move)
+    detect_shapes = []
 
     timestamp = int(time.time())
     move['id'] = str(uuid4())
