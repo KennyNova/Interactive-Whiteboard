@@ -9,6 +9,7 @@ Our project is built using a combination of powerful technologies to ensure a sm
 - **Backend**:
   - **Flask**: A micro web framework written in Python, chosen for its simplicity and flexibility.
   - **Flask-SocketIO**: Enables real-time bidirectional event-based communication between the web clients and the server.
+  - **OpenAI**: Allows the user to query about the app and tools or any other needs.
   
 - **Frontend**:
   - **Next.js**: A React framework for production, providing features like server-side rendering and generating static websites for React-based web applications.
@@ -29,7 +30,7 @@ To get the application running, you'll need to set up both the backend and front
    cd backend
 3. Install the necessary Python dependencies by running:
     ```py
-    pip install Flask Flask-SocketIO python-socketio
+    pip install Flask Flask-SocketIO python-socketio OpenAI
     ```
 4. Set up the environment and start the Flask application (Windows):
     ```bash
