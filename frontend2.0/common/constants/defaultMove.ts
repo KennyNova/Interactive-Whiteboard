@@ -25,4 +25,5 @@ export const DEFAULT_MOVE: Move = {
     base64: '',
   },
   timestamp: 0,
+  roomId: ''
 };

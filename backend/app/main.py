@@ -1,7 +1,6 @@
 from flask import Flask, request
 from flask_socketio import SocketIO, join_room, leave_room, emit, rooms, send
 from uuid import uuid4
-import requests
 import time
 from objects import ClientToServerEvents, Move, Room, ServerToClientEvents
 from openai import OpenAI, AssistantEventHandler
@@ -14,12 +13,16 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 serverRooms = {}
 
 class EventHandler(AssistantEventHandler):
+    @override
     def on_text_created(self, text) -> None:
         print(f"THIDNFAJDKL VJAL: {request.sid}")
+        print(f"\nassistant > ", end="", flush=True)
         # Emit the assistant's response to the appropriate room or user
         socketio.emit('assistant_reply', {'message': text.content}, room=rooms(request.sid))
-
+    @override
     def on_text_delta(self, delta, snapshot):
+        print(f"THIDNFAJDKL VJAL: {request.sid}")
+        print(delta.value, end="", flush=True)
         # Handle deltas if needed, e.g., updates to the text
         socketio.emit('assistant_update', {'delta': delta.value}, room=rooms(request.sid))
 
@@ -169,4 +172,4 @@ def on_disconnect():
     emit('user_disconnected', request.sid, room=room_id)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=8000)
+    socketio.run(app, host='0.0.0.0', port=8000, allow_unsafe_werkzeug=True)
