@@ -77,6 +77,7 @@ export interface ServerToClientEvents {
   new_user: (userId: string, username: string) => void;
   user_disconnected: (userId: string) => void;
   new_msg: (userId: string, msg: string) => void;
+  assistant_reply: (data: { message: string }) => void;
 }
 
 export interface ClientToServerEvents {

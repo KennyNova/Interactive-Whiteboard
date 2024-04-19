@@ -1,14 +1,40 @@
-
 from flask import Flask, request
 from flask_socketio import SocketIO, join_room, leave_room, emit, rooms, send
 from uuid import uuid4
+import requests
 import time
 from objects import ClientToServerEvents, Move, Room, ServerToClientEvents
+from openai import OpenAI, AssistantEventHandler
+from typing_extensions import override
 
 app = Flask(__name__)
+client = OpenAI()
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 serverRooms = {}
+
+class EventHandler(AssistantEventHandler):
+    def on_text_created(self, text) -> None:
+        print(f"THIDNFAJDKL VJAL: {request.sid}")
+        # Emit the assistant's response to the appropriate room or user
+        socketio.emit('assistant_reply', {'message': text.content}, room=rooms(request.sid))
+
+    def on_text_delta(self, delta, snapshot):
+        # Handle deltas if needed, e.g., updates to the text
+        socketio.emit('assistant_update', {'delta': delta.value}, room=rooms(request.sid))
+
+# Start the assistant stream with a user's query
+def start_assistant_stream(user_query):
+    print("called")
+    with client.beta.threads.runs.stream(
+        thread_id=thread.id,
+        assistant_id="asst_dRyIQ7NcwoqpFIxV45Qh9DYy",
+        instructions=f"Respond to this user query: {user_query}",
+        event_handler=EventHandler(),
+    ) as stream:
+        stream.until_done()
+
+thread = client.beta.threads.create()
 
 def add_move(room_id, socket_id, move):
     print(serverRooms)
@@ -116,7 +142,7 @@ def on_mouse_move(data):
         print(f"this is the room: {rooms(request.sid)}")
     room_id = rooms(request.sid)[0]  # get the room id associated with the current sid
 
-    emit('mouse_moved', {'newX': x, 'newY': y, 'socketIdMoved': rooms(request.sid)[0]})
+    emit('mouse_moved', {'newX': x, 'newY': y, 'socketIdMoved': rooms(request.sid)})
 
 @socketio.on('send_msg')
 def on_send_msg(data):
@@ -127,8 +153,13 @@ def on_send_msg(data):
         'msg': data
     }
 
-    # emit('new_msg', request.sid, msg, room=request.sid)
+    if data.startswith('/ask'):
+        question = data[4:].strip()  # Extract the question from the message
+        start_assistant_stream(question)  # Start the assistant stream with the extracted question
+
+
     emit('new_msg', msg)
+
 
 @socketio.on('disconnect')
 def on_disconnect():

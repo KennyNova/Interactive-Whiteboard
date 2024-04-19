@@ -27,30 +27,44 @@ const Chat = () => {
   }
 
   useEffect(() => {
-    const handleNewMsg = (msgData: MsgData) => {
+    const handleNewMsg = (msgData: any) => {
       const user = room.users.get(msgData.userId);
-      console.log(room)
-      const msg = msgData.msg
-
-      console.log(`this is the userID: ${JSON.stringify(msgData.userId)} this is the message they sent: ${msg}`)
-      
-      handleMsgs.push({
-        userId: msgData.userId,
-        msg,
+      const msg = {
+        userId: user?.name || '',
+        msg: msgData.msg,
         id: msgs.length + 1,
         username: user?.name || 'Anonymous',
         color: user?.color || '#000',
-      });
+      };
 
+      console.log(`UserID: ${JSON.stringify(msgData.userId)} Message: ${msgData.msg}`);
+      handleMsgs.push(msg);
       msgList.current?.scroll({ top: msgList.current?.scrollHeight });
+      if (!opened) setNewMsg(true);
+    };
 
+    const handleAssistantMsg = (data: { message: string }) => {
+      // Assuming the assistant uses a fixed userId or a special identifier
+      const assistantMsg = {
+        userId: 'assistant',
+        msg: data.message,
+        id: msgs.length + 1,
+        username: 'Assistant',
+        color: '#007BFF',  // Giving the assistant a unique color
+      };
+      
+      console.log(`Assistant says: ${data.message}`);
+      handleMsgs.push(assistantMsg);
+      msgList.current?.scroll({ top: msgList.current?.scrollHeight });
       if (!opened) setNewMsg(true);
     };
 
     socket.on('new_msg', handleNewMsg);
+    socket.on('assistant_reply', handleAssistantMsg);
 
     return () => {
       socket.off('new_msg', handleNewMsg);
+      socket.off('assistant_reply', handleAssistantMsg);
     };
   }, [handleMsgs, msgs, opened, room.users]);
 
@@ -76,7 +90,6 @@ const Chat = () => {
             </p>
           )}
         </div>
-
         <motion.div
           animate={{ rotate: opened ? 0 : 180 }}
           transition={{ duration: 0.2 }}
