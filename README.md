@@ -1,6 +1,6 @@
 # Interactive Whiteboard Application
 
-Welcome to the Interactive Whiteboard Application project! This application is designed to provide a collaborative environment for users to share ideas, drawings, and notes in real-time. This project is forked from [collabio](https://github.com/kriziu/collabio), an incredible project that laid the foundation for real-time collaboration. We've built upon this foundation, enhancing the project with new features, technologies, and a streamlined user experience.
+Welcome to the Interactive Whiteboard Application project! This application is designed to provide a collaborative environment for users to share ideas, drawings, and notes in real-time. This project is forked from [collabio](https://github.com/kriziu/collabio), an incredible project that laid the frontend foundation for real-time collaboration. We've built upon this frontend, enhancing the project with new features, technologies, and a streamlined user experience.
 
 ## Technologies Used
 
@@ -22,6 +22,12 @@ Our project is built using a combination of powerful technologies to ensure a sm
 
 To get the application running, you'll need to set up both the backend and frontend. Below are the steps to do so:
 
+### Clone the Repository
+
+```bash
+git clone https://github.com/KennyNova/Interactive-Whiteboard .
+```
+
 ### Backend Setup
 
 1. Open your terminal or command prompt.
@@ -30,12 +36,13 @@ To get the application running, you'll need to set up both the backend and front
    cd backend
 3. Install the necessary Python dependencies by running:
     ```py
-    pip install Flask Flask-SocketIO python-socketio OpenAI
+    pip install -r requirements.txt
     ```
-4. Set up the environment and start the Flask application (Windows):
+4. Set up the environment and start the Flask application :
     ```bash
-    Set-ExecutionPolicy Unrestricted -Scope Process
-    .\venv\Scripts\activate
+    Set-ExecutionPolicy Unrestricted -Scope Process (Windows)
+    .\venv\Scripts\activate (Windows)
+    source /venv/Scripts/activate (mac)
     cd app
     python main.py
     ```
@@ -47,10 +54,10 @@ To get the application running, you'll need to set up both the backend and front
     ```
 3. Install the dependencies:
     ```
-    npm i
+    npm install
     ```
 4. Start the development server:
     ```
     npm run dev
     ```
-Now, your application should be running, and you can access the frontend through your web browser at the default URL provided by the Next.js development server.
+Now, your application should be running, and you can access the frontend through your web browser at the default URL(localhost:3000) provided by the Next.js development server.
