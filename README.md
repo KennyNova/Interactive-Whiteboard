@@ -1,4 +1,4 @@
-# Interactive Whiteboard Application
+# Collaborative Whiteboard Application
 
 Welcome to the Interactive Whiteboard Application project! This application is designed to provide a collaborative environment for users to share ideas, drawings, and notes in real-time. This project is forked from [collabio](https://github.com/kriziu/collabio), an incredible project that laid the frontend foundation for real-time collaboration. We've built upon this frontend, enhancing the project with new features, technologies, and a streamlined user experience.
 
