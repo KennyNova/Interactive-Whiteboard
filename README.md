@@ -18,6 +18,9 @@ Our project is built using a combination of powerful technologies to ensure a sm
   - **TailwindCSS**: A utility-first CSS framework for creating custom designs without having to leave your HTML.
   - **Framer Motion**: A popular library for React used to easily add animations and interactive elements to our application.
 
+## Try it out
+[Live demo](https://ai.sacade.ne)
+
 ## Getting Started
 
 To get the application running, you'll need to set up both the backend and frontend. Below are the steps to do so:
