@@ -2,6 +2,9 @@
 
 Welcome to the Interactive Whiteboard Application project! This application is designed to provide a collaborative environment for users to share ideas, drawings, and notes in real-time. This project is forked from [collabio](https://github.com/kriziu/collabio), an incredible project that laid the frontend foundation for real-time collaboration. We've built upon this frontend, enhancing the project with new features, technologies, and a streamlined user experience.
 
+## Try it out
+[Live demo!](https://ai.sacade.net)
+
 ## Technologies Used
 
 Our project is built using a combination of powerful technologies to ensure a smooth, real-time experience:
@@ -18,8 +21,7 @@ Our project is built using a combination of powerful technologies to ensure a sm
   - **TailwindCSS**: A utility-first CSS framework for creating custom designs without having to leave your HTML.
   - **Framer Motion**: A popular library for React used to easily add animations and interactive elements to our application.
 
-## Try it out
-[Live demo](https://ai.sacade.ne)
+
 
 ## Getting Started
 
