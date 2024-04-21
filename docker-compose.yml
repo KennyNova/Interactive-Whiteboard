@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend2.0
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./frontend2.0:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: npm start
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    command: python app/main.py
+
+# version: '3'
+# services:
+#   backend:
+#     build: ./backend
+#     volumes:
+#       - ./backend:/app
+#     ports:
+#       - "8000:8000"
+#     command: python3 main.py
+#   frontend:
+#     build: ./frontend2.0
+#     volumes:
+#       - ./frontend2.0:/app
+#       - /app/node_modules
+#     ports:
+#       - "3000:3000"
+#     command: npm run dev
