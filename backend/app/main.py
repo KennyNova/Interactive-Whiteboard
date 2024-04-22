@@ -5,6 +5,7 @@ import time
 from objects import ClientToServerEvents, Move, Room, ServerToClientEvents
 from openai import OpenAI, AssistantEventHandler
 from typing_extensions import override
+import traceback
 
 app = Flask(__name__)
 client = OpenAI()
@@ -13,29 +14,58 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 serverRooms = {}
 
 class EventHandler(AssistantEventHandler):
+    def __init__(self, sid, room_id):
+        super().__init__()  # Call the __init__ method of the AssistantEventHandler class
+        self.sid = sid
+        self.room_id = room_id
+
+    @override
+    def on_event(self, event):
+        if event.event == 'thread.run.requires_action':
+            self.handle_requires_action(event.data, event.data.id)
+
+    def handle_requires_action(self, data, run_id):
+        tool_outputs = []
+        # Handle tool calls here
+        self.submit_tool_outputs(tool_outputs, run_id)
+
+    def submit_tool_outputs(self, tool_outputs, run_id):
+        with client.beta.threads.runs.submit_tool_outputs_stream(
+            thread_id=self.current_run.thread_id,
+            run_id=self.current_run.id,
+            tool_outputs=tool_outputs,
+            event_handler=EventHandler(self.sid, self.room_id),
+        ) as stream:
+            for text in stream.text_deltas:
+                print(text, end="", flush=True)
+            print()
+
     @override
     def on_text_created(self, text) -> None:
-        print(f"THIDNFAJDKL VJAL: {request.sid}")
-        print(f"\nassistant > ", end="", flush=True)
-        # Emit the assistant's response to the appropriate room or user
-        socketio.emit('assistant_reply', {'message': text.content}, room=rooms(request.sid))
+        socketio.emit('assistant_reply', {'message': text.content}, room=self.room_id)
+
     @override
     def on_text_delta(self, delta, snapshot):
-        print(f"THIDNFAJDKL VJAL: {request.sid}")
-        print(delta.value, end="", flush=True)
-        # Handle deltas if needed, e.g., updates to the text
-        socketio.emit('assistant_update', {'delta': delta.value}, room=rooms(request.sid))
+        socketio.emit('assistant_update', {'delta': delta.value}, room=self.room_id)
 
-# Start the assistant stream with a user's query
-def start_assistant_stream(user_query):
-    print("called")
-    with client.beta.threads.runs.stream(
-        thread_id=thread.id,
-        assistant_id="asst_dRyIQ7NcwoqpFIxV45Qh9DYy",
-        instructions=f"Respond to this user query: {user_query}",
-        event_handler=EventHandler(),
-    ) as stream:
-        stream.until_done()
+def start_assistant_stream(user_query, sid, room_id):
+    print("start_assistant_stream called")
+    print(f"room ID: {room_id}")
+    try:
+        print(f"Thread ID: {thread.id}")
+        print(f"Thread ID: {room_id[2]}")
+        print("Attempting to start stream...")
+        client.beta.threads.runs.stream(
+            thread_id=thread.id,
+            assistant_id="asst_dRyIQ7NcwoqpFIxV45Qh9DYy",
+            instructions=f"Respond to this user_query: {user_query}",
+            event_handler=EventHandler(sid, room_id[2]),
+        )
+        print("Stream started successfully")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        traceback.print_exc()
+
 
 thread = client.beta.threads.create()
 
@@ -139,10 +169,6 @@ def on_mouse_move(data):
     client_data = data['mousePos']
     x = client_data['x']
     y = client_data['y']
-    print(f"this is the request.sid: {request.sid}")
-    print(f"these are the rooms: {rooms}")
-    if(rooms(request.sid)):
-        print(f"this is the room: {rooms(request.sid)}")
     room_id = rooms(request.sid)[0]  # get the room id associated with the current sid
 
     emit('mouse_moved', {'newX': x, 'newY': y, 'socketIdMoved': rooms(request.sid)})
@@ -150,16 +176,17 @@ def on_mouse_move(data):
 @socketio.on('send_msg')
 def on_send_msg(data):
     print(f"this is the message data: {data}")
-    room_id = rooms(request.sid)[0]
+    room_id = rooms(request.sid)
+    print(room_id)
     msg = {
         'userId': request.sid,
-        'msg': data
+        'msg': data,
+        'room': room_id
     }
 
     if data.startswith('/ask'):
         question = data[4:].strip()  # Extract the question from the message
-        start_assistant_stream(question)  # Start the assistant stream with the extracted question
-
+        start_assistant_stream(question, request.sid, rooms(request.sid))  # Start the assistant stream with the extracted question
 
     emit('new_msg', msg)
 
